@@ -2,6 +2,9 @@ function getSet(objParent, propertyPath, setValue) {
     'use strict';
     var matchOr = new RegExp('\\s*\\|\\|\\s*$');
     var matchIncrement = new RegExp('\\s*\\+\\+\\s*$');
+    if (propertyPath.join) {
+        propertyPath = propertyPath.join('.');
+    }
     var path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchIncrement, '');
     path = path.split('.');
     var len = path.length;
