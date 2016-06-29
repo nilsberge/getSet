@@ -20,7 +20,7 @@ function getSet(objParent, propertyPath, setValue) {
     var objectIsRequired = settingValue || retainExisting;
 
     function isObject(obj) {
-        return typeof obj === 'object';
+        return typeof obj === 'object' || isFunction(obj);
     }
     function isFunction(obj) {
         var plainObj = {};
