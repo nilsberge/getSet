@@ -1,12 +1,12 @@
 function getSet(objParent, propertyPath, setValue) {
     'use strict';
     var matchOr = new RegExp('\\s*\\|\\|\\s*$');
-    var matchIncrement = new RegExp('\\s*\\+\\+\\s*$');
+    var matchOperator = new RegExp('\\s*(\\+\\+|\\-\\-)\\s*$');
     var matchFunction = new RegExp('\\s*\\(\\)\\s*$');
     if (propertyPath.join) {
         propertyPath = propertyPath.join('.');
     }
-    var path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchIncrement, '').replace(matchFunction, '');
+    var path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '');
     path = path.split('.');
     var len = path.length;
     var loop;
@@ -14,9 +14,10 @@ function getSet(objParent, propertyPath, setValue) {
     var property;
     var settingValue = arguments.length === 3;
     var getOrMake = matchOr.test(propertyPath);
-    var incrementAppend = matchIncrement.test(propertyPath);
+    var operator = propertyPath.match(matchOperator);
+    operator = operator && operator[1];
     var functionRequired = matchFunction.test(propertyPath);
-    var retainExisting = getOrMake || incrementAppend;
+    var retainExisting = getOrMake || operator;
     var objectIsRequired = settingValue || retainExisting;
 
     function isObject(obj) {
@@ -24,7 +25,7 @@ function getSet(objParent, propertyPath, setValue) {
     }
     function isFunction(obj) {
         var plainObj = {};
-        return typeof obj === 'function' || (obj && plainObj.toString.call(obj) === '[object Function]') || (isObject(obj) && (/^\s*function/i).test(obj + ''));
+        return obj && (typeof obj === 'function' || plainObj.toString.call(obj) === '[object Function]' || (typeof obj === 'object' && (/^\s*function/i).test(obj + '')));
     }
     function typeErrMsg(loop, obj, operation) {
         return 'Cannot ' + operation + ' ' + path.slice(0, loop + 1).join('.') + '. typeof ' + path.slice(0, loop).join('.') + ' = \'' + typeof obj + '\'.';
@@ -57,11 +58,13 @@ function getSet(objParent, propertyPath, setValue) {
                 }
                 if (loop + 1 === len) {
                     if (retainExisting) {
-                        if (incrementAppend) {
+                        if (operator) {
+                            setValue = settingValue ? setValue : 1;
+                            setValue = operator === '++' ? +setValue : -setValue;
                             if (!isObject(parentObj[property])) {
-                                parentObj[property] = (parentObj[property] || 0) + (settingValue ? setValue : 1);
+                                parentObj[property] = (+parentObj[property] || 0) + setValue;
                             } else {
-                                throw new TypeError(typeErrMsg(loop + 1, parentObj[property], 'increment'));
+                                throw new TypeError(typeErrMsg(loop + 1, parentObj[property], 'in/decrement'));
                             }
                         } else {
                             parentObj[property] = parentObj[property] || setValue;
