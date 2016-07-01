@@ -1,12 +1,30 @@
 function getSet(objParent, propertyPath, setValue) {
     'use strict';
+    var path;
     var matchOr = new RegExp('\\s*\\|\\|\\s*$');
     var matchOperator = new RegExp('\\s*(\\+\\+|\\-\\-)\\s*$');
     var matchFunction = new RegExp('\\s*\\(\\)\\s*$');
+
+    function isFunction(obj) {
+        var plainObj = {};
+        return obj && (typeof obj === 'function' || plainObj.toString.call(obj) === '[object Function]' || (typeof obj === 'object' && (/^\s*function/i).test(obj + '')));
+    }
+    function isObject(obj) {
+        return obj && (typeof obj === 'object' || isFunction(obj));
+    }
+    function typeErrMsg(loop, obj, operation) {
+        return 'Cannot ' + operation + ' ' + path.slice(0, loop + 1).join('.') + ' (typeof ' + (path.slice(0, loop).join('.') || obj) + ' = \'' + typeof obj + '\')';
+    }
+    if (!propertyPath) {
+        path = ['propertyPath'];
+        throw new TypeError(typeErrMsg(1, propertyPath, 'determine'));
+    }
     if (propertyPath.join) {
         propertyPath = propertyPath.join('.');
     }
-    var path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '');
+    propertyPath = propertyPath + '';
+
+    path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '');
     path = path.split('.');
     var len = path.length;
     var loop;
@@ -20,16 +38,6 @@ function getSet(objParent, propertyPath, setValue) {
     var retainExisting = getOrMake || operator;
     var objectIsRequired = settingValue || retainExisting;
 
-    function isObject(obj) {
-        return typeof obj === 'object' || isFunction(obj);
-    }
-    function isFunction(obj) {
-        var plainObj = {};
-        return obj && (typeof obj === 'function' || plainObj.toString.call(obj) === '[object Function]' || (typeof obj === 'object' && (/^\s*function/i).test(obj + '')));
-    }
-    function typeErrMsg(loop, obj, operation) {
-        return 'Cannot ' + operation + ' ' + path.slice(0, loop + 1).join('.') + '. typeof ' + path.slice(0, loop).join('.') + ' = \'' + typeof obj + '\'.';
-    }
     function result(obj) {
         if (functionRequired && !isFunction(obj)) {
             if (window.console) {
