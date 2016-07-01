@@ -22,7 +22,7 @@ function getSet(objParent, propertyPath, setValue) {
     if (propertyPath.join) {
         propertyPath = propertyPath.join('.');
     }
-    propertyPath = propertyPath + '';
+    propertyPath += '';
 
     path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '');
     path = path.split('.');
