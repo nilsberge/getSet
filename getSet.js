@@ -4,6 +4,7 @@ function getSet(objParent, propertyPath, setValue) {
     var matchOr = new RegExp('\\s*\\|\\|\\s*$');
     var matchOperator = new RegExp('\\s*(\\+\\+|\\-\\-)\\s*$');
     var matchFunction = new RegExp('\\s*\\(\\)\\s*$');
+    var matchClone = new RegExp('\\s*clone\\s*$');
 
     function isFunction(obj) {
         var plainObj = {};
@@ -24,7 +25,7 @@ function getSet(objParent, propertyPath, setValue) {
     }
     propertyPath += '';
 
-    path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '');
+    path = propertyPath.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '').replace(matchClone, '');
     path = path.split('.');
     var len = path.length;
     var loop;
@@ -36,6 +37,10 @@ function getSet(objParent, propertyPath, setValue) {
     operator = operator && operator[1];
     var functionRequired = matchFunction.test(propertyPath);
     var retainExisting = getOrMake || operator;
+    var returnClone = matchClone.test(propertyPath);
+    if (returnClone) {
+        settingValue = false;
+    }
     var objectIsRequired = settingValue || retainExisting;
 
     function result(obj) {
@@ -46,9 +51,11 @@ function getSet(objParent, propertyPath, setValue) {
             return function () {
                 return undefined;
             };
-        } else {
-            return obj;
         }
+        if (returnClone) {
+            obj = JSON.parse(JSON.stringify(obj));
+        }
+        return obj;
     }
 
     for (loop = 0; loop < len; loop += 1) {
