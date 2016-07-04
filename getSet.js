@@ -1,10 +1,10 @@
 function getSet(objParent, propertyPath, setValue) {
     'use strict';
     var path;
-    var matchOr = new RegExp('\\s*\\|\\|\\s*$');
-    var matchOperator = new RegExp('\\s*(\\+\\+|\\-\\-)\\s*$');
-    var matchFunction = new RegExp('\\s*\\(\\)\\s*$');
-    var matchJsonCopy = new RegExp('\\s+jsoncopy\\s*$');
+    var matchOr = /\s*\|\|\s*$/;
+    var matchOperator = /\s*(\+\+|--)\s*$/;
+    var matchFunction = /\s*\(\)\s*$/;
+    var matchJsonCopy = /\s+jsoncopy\s*$/;
 
     function isFunction(obj) {
         var plainObj = {};
