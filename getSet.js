@@ -13,7 +13,7 @@ function getSet(objParent, propertyPath, setValue) {
         return obj && (typeof obj === 'object' || isFunction(obj));
     }
     function typeErrMsg(loop, obj, operation) {
-        return 'Cannot ' + operation + ' ' + path.slice(0, loop + 1).join('.') + ' (typeof ' + (path.slice(0, loop).join('.') || obj) + ' = \'' + typeof obj + '\')';
+        return 'Cannot ' + operation + ' ' + path.slice(0, loop + 1).join('.') + ' (typeof ' + (path.slice(0, loop).join('.') || obj || '(parent object)') + ' = \'' + (obj === null ? 'null' : typeof obj) + '\')';
     }
     if (!propertyPath) {
         path = ['propertyPath'];
@@ -54,7 +54,7 @@ function getSet(objParent, propertyPath, setValue) {
         property = path[loop];
         if (parentObj || objectIsRequired) {
             if (objectIsRequired) {
-                if (!parentObj.hasOwnProperty(property)) {
+                if (parentObj && !parentObj.hasOwnProperty(property)) {
                     if (isObject(parentObj)) {
                         if (loop + 1 < len) {
                             parentObj[property] = {};
@@ -63,7 +63,7 @@ function getSet(objParent, propertyPath, setValue) {
                         throw new TypeError(typeErrMsg(loop, parentObj, 'create'));
                     }
                 }
-                if (loop + 1 === len) {
+                if (parentObj && loop + 1 === len) {
                     if (retainExisting) {
                         if (operator) {
                             setValue = settingValue ? setValue : 1;
