@@ -1,23 +1,28 @@
-function getSet(objParent, propertyPath, setValue) {
+function getSet(parentObject, propertyPath, setValue) {
     'use strict';
     var path;
     var matchOr = /\s*\|\|\s*$/;
     var matchOperator = /\s*(\+\+|--)\s*$/;
     var matchFunction = /\s*\(\)\s*$/;
 
+    function getType(obj) {
+        return Object.prototype.toString.call(obj).slice(8, -1);
+    }
     function isFunction(obj) {
-        var plainObj = {};
-        return obj && (typeof obj === 'function' || plainObj.toString.call(obj) === '[object Function]' || (typeof obj === 'object' && (/^\s*function/i).test(obj + '')));
+        var type = typeof obj;
+        return obj && (type === 'function' || getType(obj) === 'Function' || (type === 'object' && (/^\s*function/i).test(obj + '')));
     }
     function isObject(obj) {
-        return obj && (typeof obj === 'object' || isFunction(obj));
+        return obj && ((typeof obj === 'object' && !(/Array|Date|RegExp/).test(getType(obj))) || isFunction(obj));
     }
     function typeErrMsg(loop, obj, operation) {
-        return 'Cannot ' + operation + ' ' + path.slice(0, loop + 1).join('.') + ' (typeof ' + (path.slice(0, loop).join('.') || obj || '(parent object)') + ' = \'' + (obj === null ? 'null' : typeof obj) + '\')';
+        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + getType(obj) + '\'.';
     }
-    if (!propertyPath) {
-        path = ['propertyPath'];
-        throw new TypeError(typeErrMsg(1, propertyPath, 'determine'));
+
+    var parentIsObject = isObject(parentObject);
+    if (!parentIsObject || !propertyPath || !String(propertyPath)) {
+        path = [parentIsObject ? 'propertyPath' : 'parentObject'];
+        throw new TypeError(typeErrMsg(1, parentIsObject ? propertyPath : parentObject, 'determine argument'));
     }
     if (propertyPath.join) {
         propertyPath = propertyPath.join('.');
@@ -28,7 +33,7 @@ function getSet(objParent, propertyPath, setValue) {
     path = path.split('.');
     var len = path.length;
     var loop;
-    var parentObj = objParent;
+    var objParent = parentObject;
     var property;
     var settingValue = arguments.length === 3;
     var getOrMake = matchOr.test(propertyPath);
@@ -44,7 +49,7 @@ function getSet(objParent, propertyPath, setValue) {
                 window.console.log(typeErrMsg(loop + 1, obj, 'execute'));
             }
             return function () {
-                return undefined;
+                return;
             };
         }
         return obj;
@@ -52,43 +57,43 @@ function getSet(objParent, propertyPath, setValue) {
 
     for (loop = 0; loop < len; loop += 1) {
         property = path[loop];
-        if (parentObj || objectIsRequired) {
+        if (objParent || objectIsRequired) {
             if (objectIsRequired) {
-                if (parentObj && !parentObj.hasOwnProperty(property)) {
-                    if (isObject(parentObj)) {
+                if (!objParent.hasOwnProperty(property)) {
+                    if (isObject(objParent)) {
                         if (loop + 1 < len) {
-                            parentObj[property] = {};
+                            objParent[property] = {};
                         }
                     } else {
-                        throw new TypeError(typeErrMsg(loop, parentObj, 'create'));
+                        throw new TypeError(typeErrMsg(loop, objParent, 'create'));
                     }
                 }
-                if (parentObj && loop + 1 === len) {
+                if (loop + 1 === len) {
                     if (retainExisting) {
                         if (operator) {
                             setValue = settingValue ? setValue : 1;
                             setValue = operator === '++' ? +setValue : -setValue;
-                            if (!isObject(parentObj[property])) {
-                                parentObj[property] = (+parentObj[property] || 0) + setValue;
+                            if (!isObject(objParent[property])) {
+                                objParent[property] = (+objParent[property] || 0) + setValue;
                             } else {
-                                throw new TypeError(typeErrMsg(loop + 1, parentObj[property], 'in/decrement'));
+                                throw new TypeError(typeErrMsg(loop + 1, objParent[property], 'in/decrement'));
                             }
                         } else {
-                            parentObj[property] = parentObj[property] || setValue;
+                            objParent[property] = objParent[property] || setValue;
                         }
                     } else {
-                        parentObj[property] = setValue;
+                        objParent[property] = setValue;
                     }
                 }
             }
-            if (isObject(parentObj)) {
-                parentObj = parentObj[property];
+            if (isObject(objParent)) {
+                objParent = objParent[property];
             } else {
-                throw new TypeError(typeErrMsg(loop, parentObj, 'read'));
+                throw new TypeError(typeErrMsg(loop, objParent, 'read'));
             }
         } else {
-            return result(parentObj);
+            return result(objParent);
         }
     }
-    return result(parentObj);
+    return result(objParent);
 }
