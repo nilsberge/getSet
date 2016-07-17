@@ -5,22 +5,19 @@ function getSet(parentObject, propertyPath, setValue) {
     var matchOperator = /\s*(\+\+|--)\s*$/;
     var matchFunction = /\s*\(\)\s*$/;
 
-    function getType(obj) {
-        return Object.prototype.toString.call(obj).slice(8, -1);
-    }
     function isFunction(obj) {
         var type = typeof obj;
-        return obj && (type === 'function' || getType(obj) === 'Function' || (type === 'object' && (/^\s*function/i).test(obj + '')));
+        return obj && (type === 'function' || (type === 'object' && (/^\s*function/i).test(obj + '')));
     }
     function isObject(obj) {
-        return obj && ((typeof obj === 'object' && !(/Array|Date|RegExp/).test(getType(obj))) || isFunction(obj));
+        return obj && (typeof obj === 'object' || isFunction(obj));
     }
     function typeErrMsg(loop, obj, operation) {
-        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + getType(obj) + '\'.';
+        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + Object.prototype.toString.call(obj).slice(8, -1) + '\'.';
     }
 
     var parentIsObject = isObject(parentObject);
-    if (!parentIsObject || !propertyPath || !String(propertyPath)) {
+    if (!parentIsObject || !propertyPath || !propertyPath.length) {
         path = [parentIsObject ? 'propertyPath' : 'parentObject'];
         throw new TypeError(typeErrMsg(1, parentIsObject ? propertyPath : parentObject, 'determine argument'));
     }
