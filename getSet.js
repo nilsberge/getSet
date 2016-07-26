@@ -14,7 +14,7 @@ function getSet(parentObject, propertyPath, setValue) {
     }
     function typeErrMsg(loop, obj, operation) {
         var objType = Object.prototype.toString.call(obj).slice(8, -1);
-        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + ((objType === 'Number' && isNaN(obj)) ? 'NaN' : objType) + '\'.';
+        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + objType + ((objType === 'Number' && isNaN(obj)) ? ' (NaN)' : '') + '\'.';
     }
 
     var parentIsObject = isObject(parentObject);
@@ -71,7 +71,7 @@ function getSet(parentObject, propertyPath, setValue) {
                         if (operator) {
                             setValue = settingValue ? setValue : 1;
                             setValue = operator === '++' ? +setValue : -setValue;
-                            if (!isObject(objParent[property]) && !isNaN(setValue) && !isNaN(+objParent[property] || 0)) {
+                            if (!isObject(objParent[property]) && !isNaN(setValue) && !isNaN(objParent[property] || 0)) {
                                 objParent[property] = (+objParent[property] || 0) + setValue;
                             } else {
                                 throw new TypeError(typeErrMsg(loop + 1, objParent[property], 'in/decrement'));
