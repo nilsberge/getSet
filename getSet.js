@@ -14,7 +14,7 @@ function getSet(parentObject, propertyPath, setValue) {
     }
     function typeErrMsg(loop, obj, operation) {
         var objType = Object.prototype.toString.call(obj).slice(8, -1);
-        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + (objType === 'Number' && isNaN(obj) ? 'NaN' : objType) + '\'.';
+        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + ((objType === 'Number' && isNaN(obj)) ? 'NaN' : objType) + '\'.';
     }
 
     var parentIsObject = isObject(parentObject);
