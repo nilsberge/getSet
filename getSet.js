@@ -71,10 +71,10 @@ function getSet(parentObject, propertyPath, setValue) {
                         if (operator) {
                             setValue = settingValue ? setValue : 1;
                             setValue = operator === '++' ? +setValue : -setValue;
-                            if (!isObject(objParent[property]) && !isNaN(setValue) && !isNaN(objParent[property] || 0)) {
+                            if ((objParent[property] === undefined && !isNaN(setValue)) || (!isObject(objParent[property]) && !isNaN(objParent[property]) && !isNaN(setValue))) {
                                 objParent[property] = (+objParent[property] || 0) + setValue;
                             } else {
-                                throw new TypeError(typeErrMsg(loop + 1, objParent[property], 'in/decrement'));
+                                throw new TypeError(typeErrMsg(loop + 1, objParent[property], 'in/decrement with value \'' + setValue + '\' on property'));
                             }
                         } else {
                             objParent[property] = objParent[property] || setValue;
