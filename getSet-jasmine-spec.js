@@ -3,10 +3,12 @@ describe("getSet function", function () {
     var stubParentObject;
 
     // setup and teardown
-    beforeAll(function () {
+    beforeAll(function () {});
+
+    beforeEach(function () {
         stubParentObject = {};
     });
-    beforeEach(function () {});
+
     afterEach(function () {});
 
     // specs
@@ -36,50 +38,121 @@ describe("getSet function", function () {
     });
 
     describe("setting a value on a deep property path", function () {
-        var testSetValue = 123;
-
+        var testSetValue;
+        beforeEach(function () {
+            testSetValue = 123
+        });
         it("should create the path to the property, set the value and return it", function () {
             expect(getSet(stubParentObject, 'foo.bar', testSetValue)).toBe(testSetValue);
         });
         it("should set the value at the full path supplied", function () {
+            getSet(stubParentObject, 'foo.bar', testSetValue);
             expect(stubParentObject.foo.bar).toBe(testSetValue);
         });
     });
 
     describe("setting a value as a property of a string object", function () {
-        it("should throw a TypeError for that property", function () {
+        beforeEach(function () {
             stubParentObject.foo = 'some string value';
+        });
+        it("should throw a TypeError for that property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo.bar', 123);
             }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'String'.");
         });
         it("should not create the property", function () {
+            expect(function () {
+                getSet(stubParentObject, 'foo.bar', 123);
+            }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'String'.");
             expect(stubParentObject.foo.bar).toBeUndefined();
         });
     });
 
     describe("setting a value as a property of a number object", function () {
-        it("should throw a TypeError for that property", function () {
+        beforeEach(function () {
             stubParentObject.foo = 123;
+        });
+        it("should throw a TypeError for that property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo.bar', 'some string value');
             }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'Number'.");
         });
         it("should not create the property", function () {
+            expect(function () {
+                getSet(stubParentObject, 'foo.bar', 'some string value');
+            }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'Number'.");
             expect(stubParentObject.foo.bar).toBeUndefined();
         });
     });
 
-    describe("called with || operator in propertyPath, and a setValue defined", function () {
+    describe("called with || option in propertyPath, and a setValue defined", function () {
         it("should get the value if the property already existed", function () {
             stubParentObject.foo = 123;
             expect(getSet(stubParentObject, 'foo || ', 456)).toBe(123);
         });
+        it("should set the property if it didn't exist", function () {
+            getSet(stubParentObject, 'bar || ', 789);
+            expect(stubParentObject.bar).toBe(789);
+        });
         it("should return the passed value if the property didn't exist", function () {
             expect(getSet(stubParentObject, 'bar || ', 789)).toBe(789);
         });
-        it("should set the property if it didn't exist", function () {
-            expect(stubParentObject.bar).toBe(789);
+    });
+
+    describe("called with ++ or -- operators in propertyPath (without setValue)", function () {
+        it("should increment the value of an undefined path to 1 and return the value", function () {
+            expect(getSet(stubParentObject, 'foo ++ ')).toBe(1);
+        });
+        it("should increment the value of a defined path by 1 and return the value", function () {
+            getSet(stubParentObject, 'foo ++ ');
+            expect(getSet(stubParentObject, 'foo ++ ')).toBe(2);
+        });
+        it("should decrement the value of an undefined path to -1 and return the value", function () {
+            expect(getSet(stubParentObject, 'foo -- ')).toBe(-1);
+        });
+        it("should decrement the value of a defined path by 1 and return the value", function () {
+            getSet(stubParentObject, 'foo -- ');
+            expect(getSet(stubParentObject, 'foo -- ')).toBe(-2);
+        });
+    });
+
+    describe("called with ++ or -- operators in propertyPath (with numeric setValue)", function () { // TODO -- ops
+        it("should increment the value of an undefined path by the setValue and return the value (Number)", function () {
+            expect(getSet(stubParentObject, 'foo ++ ', 3)).toBe(3);
+        });
+        it("should increment the value of a defined path by the setValue and return the value (Number)", function () {
+            getSet(stubParentObject, 'foo ++ ', 3);
+            expect(getSet(stubParentObject, 'foo ++ ', 3)).toBe(6);
+        });
+        it("should increment the value of an undefined path by the setValue and return the value (String)", function () {
+            expect(getSet(stubParentObject, 'foo ++ ', '3')).toBe(3);
+        });
+        it("should increment the value of a defined path by the setValue and return the value (String)", function () {
+            getSet(stubParentObject, 'foo ++ ', '3');
+            expect(getSet(stubParentObject, 'foo ++ ', '3')).toBe(6);
+        });
+    });
+
+    describe("called with ++ or -- operators in propertyPath (with a NaN setValue)", function () { // TODO -- ops
+        it("should throw a TypeError for setting that value on an undefined property", function () {
+            expect(function () {
+                getSet(stubParentObject, 'foo ++ ', 'some string value');
+            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'NaN' on property 'foo'. 'foo' is of type 'Undefined'.");
+            expect(stubParentObject.foo).toBeUndefined();
+        });
+        it("should throw a TypeError for setting that value on an existing String property", function () {
+            getSet(stubParentObject, 'foo', 'some string value');
+            expect(function () {
+                getSet(stubParentObject, 'foo ++ ', 'some string value');
+            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'NaN' on property 'foo'. 'foo' is of type 'String'.");
+            expect(stubParentObject.foo).toBe('some string value');
+        });
+        it("should throw a TypeError for setting that value on an existing Number property", function () {
+            getSet(stubParentObject, 'foo', 123);
+            expect(function () {
+                getSet(stubParentObject, 'foo ++ ', 'some string value');
+            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'NaN' on property 'foo'. 'foo' is of type 'Number'.");
+            expect(stubParentObject.foo).toBe(123);
         });
     });
 });
