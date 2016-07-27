@@ -51,6 +51,7 @@ function getSet(parentObject, propertyPath, setValue) {
     var getOrMake = matchOr.test(propertyPath);
     var operator = propertyPath.match(matchOperator);
     operator = operator && operator[1];
+    var operatorValue;
     var functionRequired = matchFunction.test(propertyPath);
     var retainExisting = getOrMake || operator;
     var objectIsRequired = settingValue || retainExisting;
@@ -83,10 +84,10 @@ function getSet(parentObject, propertyPath, setValue) {
                 if (loop + 1 === len) {
                     if (retainExisting) {
                         if (operator) {
-                            setValue = settingValue ? setValue : 1;
-                            setValue = operator === '++' ? +setValue : -setValue;
-                            if ((objParent[property] === undefined || isNumeric(objParent[property])) && isNumeric(setValue)) {
-                                objParent[property] = (+objParent[property] || 0) + setValue;
+                            operatorValue = settingValue ? setValue : 1;
+                            operatorValue = operator === '++' ? +operatorValue : -operatorValue;
+                            if ((objParent[property] === undefined || isNumeric(objParent[property])) && isNumeric(operatorValue)) {
+                                objParent[property] = (+objParent[property] || 0) + operatorValue;
                             } else {
                                 throw new TypeError(typeErrMsg(loop + 1, objParent[property], 'in/decrement with value \'' + setValue + '\' on property'));
                             }
