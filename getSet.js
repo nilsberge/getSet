@@ -5,6 +5,21 @@ function getSet(parentObject, propertyPath, setValue) {
     var matchOperator = /\s*(\+\+|--)\s*$/;
     var matchFunction = /\s*\(\)\s*$/;
 
+    function getType(obj) {
+        var type = Object.prototype.toString.call(obj).slice(8, -1);
+        if (type === 'Number') {
+            if (!isFinite(obj)) {
+                type = 'Infinity';
+                if (isNaN(obj)) {
+                    type = 'NaN';
+                }
+            }
+        }
+        return type;
+    }
+    function isNumeric(obj) {
+        return (getType(obj) === 'Number' || getType(obj) === 'String') && !isNaN(parseFloat(obj)) && isFinite(obj.toString().replace(/^-/, ''));
+    }
     function isFunction(obj) {
         var type = typeof obj;
         return obj && (type === 'function' || (type === 'object' && (/^\s*function/i).test(obj + '')));
@@ -13,8 +28,7 @@ function getSet(parentObject, propertyPath, setValue) {
         return obj && (typeof obj === 'object' || isFunction(obj));
     }
     function typeErrMsg(loop, obj, operation) {
-        var objType = Object.prototype.toString.call(obj).slice(8, -1);
-        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + objType + ((objType === 'Number' && isNaN(obj)) ? ' (NaN)' : '') + '\'.';
+        return 'getSet: Cannot ' + operation + ' \'' + path.slice(0, loop + 1).join('.') + '\'. \'' + (path.slice(0, loop).join('.') || obj) + '\' is of type \'' + getType(obj) + '\'.';
     }
 
     var parentIsObject = isObject(parentObject);
@@ -71,7 +85,7 @@ function getSet(parentObject, propertyPath, setValue) {
                         if (operator) {
                             setValue = settingValue ? setValue : 1;
                             setValue = operator === '++' ? +setValue : -setValue;
-                            if ((objParent[property] === undefined && !isNaN(setValue)) || (!isObject(objParent[property]) && !isNaN(objParent[property]) && !isNaN(setValue))) {
+                            if ((objParent[property] === undefined || isNumeric(objParent[property])) && isNumeric(setValue)) {
                                 objParent[property] = (+objParent[property] || 0) + setValue;
                             } else {
                                 throw new TypeError(typeErrMsg(loop + 1, objParent[property], 'in/decrement with value \'' + setValue + '\' on property'));
