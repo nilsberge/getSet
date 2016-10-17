@@ -16,7 +16,7 @@ describe("getSet function", function () {
         it("should throw a TypeError for parentObject", function () {
             expect(function () {
                 getSet();
-            }).toThrowError(TypeError, "getSet: Cannot determine argument 'parentObject'. 'parentObject' is of type 'Undefined'.");
+            }).toThrowError(TypeError, "getSet: Could not determine argument 'parentObject'. 'parentObject' is of type 'Undefined'.");
         });
     });
 
@@ -24,7 +24,7 @@ describe("getSet function", function () {
         it("should throw a TypeError for propertyPath", function () {
             expect(function () {
                 getSet(stubParentObject);
-            }).toThrowError(TypeError, "getSet: Cannot determine argument 'propertyPath'. 'propertyPath' is of type 'Undefined'.");
+            }).toThrowError(TypeError, "getSet: Could not determine argument 'propertyPath'. 'propertyPath' is of type 'Undefined'.");
         });
     });
 
@@ -58,12 +58,12 @@ describe("getSet function", function () {
         it("should throw a TypeError for that property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo.bar', 123);
-            }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'String'.");
+            }).toThrowError(TypeError, "getSet: Could not create 'foo.bar'. 'foo' is of type 'String'.");
         });
         it("should not create the property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo.bar', 123);
-            }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'String'.");
+            }).toThrowError(TypeError, "getSet: Could not create 'foo.bar'. 'foo' is of type 'String'.");
             expect(stubParentObject.foo.bar).toBeUndefined();
         });
     });
@@ -75,12 +75,12 @@ describe("getSet function", function () {
         it("should throw a TypeError for that property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo.bar', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'Number'.");
+            }).toThrowError(TypeError, "getSet: Could not create 'foo.bar'. 'foo' is of type 'Number'.");
         });
         it("should not create the property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo.bar', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot create 'foo.bar'. 'foo' is of type 'Number'.");
+            }).toThrowError(TypeError, "getSet: Could not create 'foo.bar'. 'foo' is of type 'Number'.");
             expect(stubParentObject.foo.bar).toBeUndefined();
         });
     });
@@ -157,21 +157,21 @@ describe("getSet function", function () {
         it("should throw a TypeError for setting that value on an undefined property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo ++ ', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Undefined'.");
+            }).toThrowError(TypeError, "getSet: Could not in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Undefined'.");
             expect(stubParentObject.foo).toBeUndefined();
         });
         it("should throw a TypeError for setting that value on an existing String property", function () {
             getSet(stubParentObject, 'foo', 'some string value');
             expect(function () {
                 getSet(stubParentObject, 'foo ++ ', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'String'.");
+            }).toThrowError(TypeError, "getSet: Could not in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'String'.");
             expect(stubParentObject.foo).toBe('some string value');
         });
         it("should throw a TypeError for setting that value on an existing Number property", function () {
             getSet(stubParentObject, 'foo', 123);
             expect(function () {
                 getSet(stubParentObject, 'foo ++ ', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Number'.");
+            }).toThrowError(TypeError, "getSet: Could not in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Number'.");
             expect(stubParentObject.foo).toBe(123);
         });
     });
@@ -180,21 +180,21 @@ describe("getSet function", function () {
         it("should throw a TypeError for setting that value on an undefined property", function () {
             expect(function () {
                 getSet(stubParentObject, 'foo -- ', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Undefined'.");
+            }).toThrowError(TypeError, "getSet: Could not in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Undefined'.");
             expect(stubParentObject.foo).toBeUndefined();
         });
         it("should throw a TypeError for setting that value on an existing String property", function () {
             getSet(stubParentObject, 'foo', 'some string value');
             expect(function () {
                 getSet(stubParentObject, 'foo -- ', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'String'.");
+            }).toThrowError(TypeError, "getSet: Could not in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'String'.");
             expect(stubParentObject.foo).toBe('some string value');
         });
         it("should throw a TypeError for setting that value on an existing Number property", function () {
             getSet(stubParentObject, 'foo', 123);
             expect(function () {
                 getSet(stubParentObject, 'foo -- ', 'some string value');
-            }).toThrowError(TypeError, "getSet: Cannot in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Number'.");
+            }).toThrowError(TypeError, "getSet: Could not in/decrement with value 'some string value' on property 'foo'. 'foo' is of type 'Number'.");
             expect(stubParentObject.foo).toBe(123);
         });
     });
