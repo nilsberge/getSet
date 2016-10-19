@@ -2,21 +2,25 @@ function getSet(parentObject, propertyPath, setValue) {
     'use strict';
     var argsLen = arguments.length;
     var settingValue = argsLen === 3;
-    var propertyPathStr = String((propertyPath && propertyPath.join) ? propertyPath.join('.') : propertyPath);
+    var propertyPathArray = propertyPath && propertyPath.join;
+    var propertyPathStr = String(propertyPathArray ? propertyPath.join('.') : propertyPath);
     var matchOr = /\s*\|\|\s*$/;
     var matchOperator = /\s*(\+\+|--)\s*$/;
-    var matchFunction = /\s*\(\)\s*$/;
-    var matchObject = /\s*\{\}\s*$/;
+    var matchAs = /^(.*\s)?as$/;
     var getOrMake = matchOr.test(propertyPathStr);
     var operator = propertyPathStr.match(matchOperator);
     operator = operator && operator[1];
     var operatorValue;
-    var functionExpected = matchFunction.test(propertyPathStr);
-    var objectExpected = matchObject.test(propertyPathStr);
-    var specificTypeExpected = functionExpected || objectExpected;
+    var typeExpected = settingValue && matchAs.test(propertyPathStr) && !propertyPathArray;
+    if (typeExpected) {
+        settingValue = false;
+    }
     var retainExisting = getOrMake || operator;
     var pathRequired = settingValue || retainExisting;
-    var path = propertyPathStr.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '').replace(matchFunction, '').replace(matchObject, '');
+    var path = propertyPathStr.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '');
+    if (!typeExpected) {
+        path.replace(matchAs, '');
+    }
     var loop = 0;
 
     function getType(obj) {
@@ -45,35 +49,24 @@ function getSet(parentObject, propertyPath, setValue) {
         return 'getSet: Could not ' + operation + ' \'' + path.slice(0, cycle + 1).join('.') + '\'. \'' + (path.slice(0, cycle).join('.') || obj) + '\' is of type \'' + getType(obj) + '\'.';
     }
     function result(obj) {
-        var typeExpected;
-        var expectedReturn;
-        if (functionExpected && !isFunction(obj)) {
-            typeExpected = 'function';
-            expectedReturn = function () {
-                return;
-            };
-        }
-        if (objectExpected && !isObject(obj)) {
-            typeExpected = 'object';
-            expectedReturn = {};
-        }
-        if (typeExpected) {
+        var typeProvided = getType(setValue);
+        if (typeExpected && typeProvided !== getType(obj)) {
             if (window.console) {
-                window.console.log(typeErrMsg(loop + 1, obj, 'get as ' + typeExpected));
+                window.console.log(typeErrMsg(loop + 1, obj, 'get as \'' + typeProvided + '\':'));
             }
-            obj = expectedReturn;
+            obj = setValue;
         }
         return obj;
     }
 
     var propertyPathType = getType(propertyPath);
-    if ((path === '' && !specificTypeExpected) || (propertyPathType !== 'String' && propertyPathType !== 'Array')) {
+    if ((path === '' && !matchAs.test(propertyPathStr)) || (propertyPathType !== 'String' && propertyPathType !== 'Array')) {
         path = argsLen === 0 ? ['parentObject'] : ['propertyPath'];
         throw new TypeError(typeErrMsg(1, argsLen === 0 ? parentObject : propertyPath, 'determine argument'));
     }
 
     var pathToResolve = path;
-    if (specificTypeExpected) {
+    if (typeExpected) {
         if (pathToResolve) {
             if (!isObject(parentObject)) {
                 path = ['parentObject', pathToResolve];
