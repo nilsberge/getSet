@@ -1,26 +1,17 @@
-function getSet(parentObject, propertyPath, setValue) {
+function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     'use strict';
     var argsLen = arguments.length;
     var settingValue = argsLen === 3;
-    var propertyPathArray = propertyPath && propertyPath.join;
-    var propertyPathStr = String(propertyPathArray ? propertyPath.join('.') : propertyPath);
-    var matchOr = /\s*\|\|\s*$/;
-    var matchOperator = /\s*(\+\+|--)\s*$/;
-    var matchAs = /^(.*\s)?as$/;
-    var getOrMake = matchOr.test(propertyPathStr);
-    var operator = propertyPathStr.match(matchOperator);
-    operator = operator && operator[1];
+    var usingOption = argsLen === 4;
+    var propertyPathStr = String((propertyPath && propertyPath.join) ? propertyPath.join('.') : propertyPath);
+    var optionOr = setValueOrOption === 'or' && usingOption;
+    var optionAs = setValueOrOption === 'as' && usingOption;
+    var optionIncrement = setValueOrOption === '++' && usingOption;
+    var optionDecrement = setValueOrOption === '--' && usingOption;
     var operatorValue;
-    var typeExpected = settingValue && matchAs.test(propertyPathStr) && !propertyPathArray;
-    if (typeExpected) {
-        settingValue = false;
-    }
-    var retainExisting = getOrMake || operator;
+    var retainExisting = optionOr || optionIncrement || optionDecrement;
     var pathRequired = settingValue || retainExisting;
-    var path = propertyPathStr.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1').replace(matchOr, '').replace(matchOperator, '');
-    if (!typeExpected) {
-        path.replace(matchAs, '');
-    }
+    var path = propertyPathStr.replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1');
     var loop = 0;
 
     function getType(obj) {
@@ -49,24 +40,24 @@ function getSet(parentObject, propertyPath, setValue) {
         return 'getSet: Could not ' + operation + ' \'' + path.slice(0, cycle + 1).join('.') + '\'. \'' + (path.slice(0, cycle).join('.') || obj) + '\' is of type \'' + getType(obj) + '\'.';
     }
     function result(obj) {
-        var typeProvided = getType(setValue);
-        if (typeExpected && typeProvided !== getType(obj)) {
+        var typeProvided = getType(optionValue);
+        if (optionAs && typeProvided !== getType(obj)) {
             if (window.console) {
                 window.console.log(typeErrMsg(loop + 1, obj, 'get as \'' + typeProvided + '\':'));
             }
-            obj = setValue;
+            obj = optionValue;
         }
         return obj;
     }
 
     var propertyPathType = getType(propertyPath);
-    if ((path === '' && !matchAs.test(propertyPathStr)) || (propertyPathType !== 'String' && propertyPathType !== 'Array')) {
+    if ((path === '' && !optionAs) || (propertyPathType !== 'String' && propertyPathType !== 'Array')) {
         path = argsLen === 0 ? ['parentObject'] : ['propertyPath'];
         throw new TypeError(typeErrMsg(1, argsLen === 0 ? parentObject : propertyPath, 'determine argument'));
     }
 
     var pathToResolve = path;
-    if (typeExpected) {
+    if (optionAs) {
         if (pathToResolve) {
             if (!isObject(parentObject)) {
                 path = ['parentObject', pathToResolve];
@@ -104,19 +95,19 @@ function getSet(parentObject, propertyPath, setValue) {
                 }
                 if (loop + 1 === len) {
                     if (retainExisting) {
-                        if (operator) {
-                            operatorValue = settingValue ? setValue : 1;
-                            operatorValue = operator === '++' ? +operatorValue : -operatorValue;
+                        if (optionIncrement || optionDecrement) {
+                            operatorValue = usingOption ? optionValue : 1;
+                            operatorValue = optionIncrement ? +operatorValue : -operatorValue;
                             if ((parentObject[property] === undefined || isNumeric(parentObject[property])) && isNumeric(operatorValue)) {
                                 parentObject[property] = (+parentObject[property] || 0) + operatorValue;
                             } else {
-                                throw new TypeError(typeErrMsg(loop + 1, parentObject[property], 'in/decrement with value \'' + setValue + '\' on property'));
+                                throw new TypeError(typeErrMsg(loop + 1, parentObject[property], 'in/decrement with value \'' + optionValue + '\' on property'));
                             }
                         } else {
-                            parentObject[property] = parentObject[property] || setValue;
+                            parentObject[property] = parentObject[property] || optionValue;
                         }
                     } else {
-                        parentObject[property] = setValue;
+                        parentObject[property] = setValueOrOption;
                     }
                 }
             }
