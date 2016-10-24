@@ -1,25 +1,20 @@
+/*
 zzz = {
-    "a": {
-        "b": {
-            "c": 123
-        }
-    },
-    "b": {
-        "c": {
-            "d": 4
-        }
-    },
-    "pp": "abc"
+"a": {
+"b": {
+"c": 123
+}
+}
 };
 getSet(zzz, 'a.b.c.d', 'as', 'qqq');
 
 zzz = {
-    "a": {
-        "b": 0
-    }
+"a": {
+"b": 0
+}
 };
 getSet(zzz, 'a.b.c');
-
+ */
 function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     'use strict';
     var argsLen = arguments.length;
@@ -68,11 +63,11 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     function result(obj) {
         var typeProvided = getType(optionValue);
         if (optionAs && typeProvided !== getType(obj)) {
-            //consoleMsg(typeErrMsg(loop + 1, obj, 'get as \'' + typeProvided + '\';'));
             if (!path.length) {
                 path = ['parentObject'];
                 loop = 1;
             }
+            //console.log('obj', obj);
             consoleMsg(typeErrMsg(loop, obj, 'get as \'' + typeProvided + '\';'));
             obj = optionValue;
         }
@@ -88,28 +83,6 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         consoleMsg(typeErrMsg(1, setValueOrOption, 'determine argument \'' + setValueOrOption + '\' in '));
     }
 
-    /*
-    var pathToResolve = path;
-    if (optionAs) {
-    if (pathToResolve) {
-    if (!isObject(parentObject)) {
-    path = ['parentObject', pathToResolve];
-    return result(parentObject);
-    }
-    } else {
-    path = ['parentObject'];
-    return result(parentObject);
-    }
-    } else {
-    if (!isObject(parentObject)) {
-    if (pathToResolve) {
-    path = ['parentObject', pathToResolve];
-    throw new TypeError(typeErrMsg(1, parentObject, 'read'));
-    }
-    }
-    }
-     */
-
     path = (path && path.split) ? path.split('.') : [];
     var len = path.length;
     var property;
@@ -117,12 +90,14 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     for (loop = 0; loop < len; loop += 1) {
         property = path[loop];
 
-        console.log('parentObject', parentObject);
-        console.log('pathRequired', pathRequired);
-        console.log('loop', loop);
-        console.log('len', len);
+        //console.log('parentObject', parentObject);
+        //console.log('pathRequired', pathRequired);
+        //console.log('loop', loop);
+        //console.log('len', len);
+        //console.log('loop < len', loop < len);
 
         if (parentObject || loop < len || pathRequired) {
+            //if (parentObject || pathRequired) {
             if (pathRequired) {
                 if (!parentObject.hasOwnProperty(property)) {
                     if (isObject(parentObject)) {
@@ -154,7 +129,15 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
                 }
             }
             if (isObject(parentObject)) {
-                parentObject = parentObject[property];
+                if (!(optionAs && loop + 1 < len && !isObject(parentObject[property]))) {
+                    if (loop + 1 < len) {
+                        if (parentObject[property]) {
+                            parentObject = parentObject[property];
+                        }
+                    } else {
+                        parentObject = parentObject[property];
+                    }
+                }
             } else {
                 if (!optionAs) {
                     throw new TypeError(typeErrMsg(loop, parentObject, 'read'));
