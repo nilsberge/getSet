@@ -1,20 +1,3 @@
-/*
-zzz = {
-"a": {
-"b": {
-"c": 123
-}
-}
-};
-getSet(zzz, 'a.b.c.d', 'as', 'qqq');
-
-zzz = {
-"a": {
-"b": 0
-}
-};
-getSet(zzz, 'a.b.c');
- */
 function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     'use strict';
     var argsLen = arguments.length;
@@ -23,7 +6,7 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     var optionAs = setValueOrOption === 'as' && usingOption;
     var optionAddition = setValueOrOption === '+=' && usingOption;
     var optionSubtraction = setValueOrOption === '-=' && usingOption;
-    var operatorValue;
+    //var operatorValue;
     var optionSpecified = optionOr || optionAs || optionAddition || optionSubtraction;
     var pathRequired = argsLen === 3 || optionOr || optionAddition || optionSubtraction;
     var path = String((propertyPath && propertyPath.join) ? propertyPath.join('.') : propertyPath).replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1');
@@ -42,9 +25,9 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         }
         return type;
     }
-    function isNumeric(obj) {
-        return (getType(obj) === 'Number' || getType(obj) === 'String') && !isNaN(parseFloat(obj)) && isFinite(obj.toString().replace(/^-/, ''));
-    }
+    //function isNumeric(obj) {
+    //    return (getType(obj) === 'Number' || getType(obj) === 'String') && !isNaN(parseFloat(obj)) && isFinite(obj.toString().replace(/^-/, ''));
+    //}
     function isFunction(obj) {
         var type = typeof obj;
         return obj && (type === 'function' || (type === 'object' && (/^\s*function/i).test(obj + '')));
@@ -67,7 +50,6 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
                 path = ['parentObject'];
                 loop = 1;
             }
-            //console.log('obj', obj);
             consoleMsg(typeErrMsg(loop, obj, 'get as \'' + typeProvided + '\';'));
             obj = optionValue;
         }
@@ -79,8 +61,10 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         throw new TypeError(typeErrMsg(1, argsLen === 0 ? parentObject : propertyPath, 'determine argument'));
     }
     if (usingOption && !optionSpecified) {
+        var pathOrig = path;
         path = ['setValueOrOption'];
-        consoleMsg(typeErrMsg(1, setValueOrOption, 'determine argument \'' + setValueOrOption + '\' in '));
+        consoleMsg(typeErrMsg(1, setValueOrOption, 'determine argument \'' + setValueOrOption + '\' in'));
+        path = pathOrig;
     }
 
     path = (path && path.split) ? path.split('.') : [];
@@ -89,62 +73,54 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
 
     for (loop = 0; loop < len; loop += 1) {
         property = path[loop];
-
-        //console.log('parentObject', parentObject);
-        //console.log('pathRequired', pathRequired);
-        //console.log('loop', loop);
-        //console.log('len', len);
-        //console.log('loop < len', loop < len);
-
-        if (parentObject || loop < len || pathRequired) {
-            //if (parentObject || pathRequired) {
-            if (pathRequired) {
-                if (!parentObject.hasOwnProperty(property)) {
-                    if (isObject(parentObject)) {
-                        if (loop + 1 < len) {
-                            parentObject[property] = {};
-                        }
-                    } else {
-                        throw new TypeError(typeErrMsg(loop, parentObject, 'create'));
+        if (pathRequired) {
+            if (!parentObject.hasOwnProperty(property)) {
+                if (isObject(parentObject)) {
+                    if (loop + 1 < len) {
+                        parentObject[property] = {};
                     }
-                }
-                if (loop + 1 === len) {
-                    if (optionSpecified) {
-                        if (optionAddition || optionSubtraction) {
-                            operatorValue = usingOption ? optionValue : 1;
-                            operatorValue = optionAddition ? +operatorValue : -operatorValue;
-                            if ((parentObject[property] === undefined || isNumeric(parentObject[property])) && isNumeric(operatorValue)) {
-                                parentObject[property] = (+parentObject[property] || 0) + operatorValue;
-                            } else {
-                                throw new TypeError(typeErrMsg(loop + 1, parentObject[property], 'in/decrement with value \'' + optionValue + '\' on property'));
-                            }
-                        } else {
-                            if (optionOr) {
-                                parentObject[property] = parentObject[property] || optionValue;
-                            }
-                        }
-                    } else {
-                        parentObject[property] = setValueOrOption;
-                    }
+                } else {
+                    throw new TypeError(typeErrMsg(loop, parentObject, 'create'));
                 }
             }
-            if (isObject(parentObject)) {
-                if (!(optionAs && loop + 1 < len && !isObject(parentObject[property]))) {
-                    if (loop + 1 < len) {
-                        if (parentObject[property]) {
-                            parentObject = parentObject[property];
+            if (loop + 1 === len) {
+                if (optionSpecified) {
+                    if (optionAddition || optionSubtraction) {
+                        //operatorValue = usingOption ? optionValue : 1;
+                        //operatorValue = optionAddition ? +operatorValue : -operatorValue;
+                        //if ((parentObject[property] === undefined || isNumeric(parentObject[property])) && isNumeric(operatorValue)) {
+                        if (parentObject[property] === undefined) {
+                            parentObject[property] = getType(optionValue) === 'Number' ? 0 : '';
+                        }
+                        if (optionAddition) {
+                            parentObject[property] += optionValue;
+                        } else {
+                            parentObject[property] -= optionValue;
                         }
                     } else {
+                        if (optionOr) {
+                            parentObject[property] = parentObject[property] || optionValue;
+                        }
+                    }
+                } else {
+                    parentObject[property] = setValueOrOption;
+                }
+            }
+        }
+        if (isObject(parentObject)) {
+            if (!(optionAs && loop + 1 < len && !isObject(parentObject[property]))) {
+                if (loop + 1 < len) {
+                    if (parentObject[property]) {
                         parentObject = parentObject[property];
                     }
-                }
-            } else {
-                if (!optionAs) {
-                    throw new TypeError(typeErrMsg(loop, parentObject, 'read'));
+                } else {
+                    parentObject = parentObject[property];
                 }
             }
         } else {
-            return result(parentObject);
+            if (!optionAs) {
+                throw new TypeError(typeErrMsg(loop, parentObject, 'read'));
+            }
         }
     }
     return result(parentObject);
