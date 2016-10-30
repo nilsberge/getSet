@@ -33,7 +33,7 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         return obj && (typeof obj === 'object' || isFunction(obj));
     }
     function typeErrMsg(cycle, obj, operation) {
-        return 'getSet: Could not ' + operation + ' \'' + path.slice(0, cycle + 1).join('.') + '\'. \'' + (path.slice(0, cycle).join('.') || obj) + '\' is of type \'' + getType(obj) + '\'.';
+        return 'getSet: Could not ' + operation + ' \'' + path.slice(0, cycle + 1).join('.') + '\'. \'' + (path.slice(0, cycle).join('.') || 'parentObject') + '\' is of type \'' + getType(obj) + '\'.';
     }
     function consoleMsg(msg) {
         if (winConsole) {
@@ -53,7 +53,7 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         return obj;
     }
 
-    if ((path === '' && !optionSpecified) || !(/String|Array/).test(getType(propertyPath))) {
+    if ((path === '' && (!optionSpecified || optionOr)) || !(/String|Array/).test(getType(propertyPath))) {
         path = argsLen === 0 ? ['parentObject'] : ['propertyPath'];
         throw new TypeError(typeErrMsg(1, argsLen === 0 ? parentObject : propertyPath, 'determine argument'));
     }
