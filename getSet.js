@@ -6,10 +6,10 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
     var optionAs = setValueOrOption === 'as' && usingOption;
     var optionAddition = setValueOrOption === '+=' && usingOption;
     var optionSubtraction = setValueOrOption === '-=' && usingOption;
-    //var operatorValue;
     var optionSpecified = optionOr || optionAs || optionAddition || optionSubtraction;
     var pathRequired = argsLen === 3 || optionOr || optionAddition || optionSubtraction;
     var path = String((propertyPath && propertyPath.join) ? propertyPath.join('.') : propertyPath).replace(/\[(?:'|")?(.+?)(?:'|")?\]/g, '.$1');
+    var pathOrig = path;
     var loop = 0;
     var winConsole = window.console;
 
@@ -25,9 +25,6 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         }
         return type;
     }
-    //function isNumeric(obj) {
-    //    return (getType(obj) === 'Number' || getType(obj) === 'String') && !isNaN(parseFloat(obj)) && isFinite(obj.toString().replace(/^-/, ''));
-    //}
     function isFunction(obj) {
         var type = typeof obj;
         return obj && (type === 'function' || (type === 'object' && (/^\s*function/i).test(obj + '')));
@@ -61,7 +58,6 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
         throw new TypeError(typeErrMsg(1, argsLen === 0 ? parentObject : propertyPath, 'determine argument'));
     }
     if (usingOption && !optionSpecified) {
-        var pathOrig = path;
         path = ['setValueOrOption'];
         consoleMsg(typeErrMsg(1, setValueOrOption, 'determine argument \'' + setValueOrOption + '\' in'));
         path = pathOrig;
@@ -86,10 +82,7 @@ function getSet(parentObject, propertyPath, setValueOrOption, optionValue) {
             if (loop + 1 === len) {
                 if (optionSpecified) {
                     if (optionAddition || optionSubtraction) {
-                        //operatorValue = usingOption ? optionValue : 1;
-                        //operatorValue = optionAddition ? +operatorValue : -operatorValue;
-                        //if ((parentObject[property] === undefined || isNumeric(parentObject[property])) && isNumeric(operatorValue)) {
-                        if (parentObject[property] === undefined) {
+                        if (!parentObject.hasOwnProperty(property)) {
                             parentObject[property] = getType(optionValue) === 'Number' ? 0 : '';
                         }
                         if (optionAddition) {
